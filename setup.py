@@ -15,7 +15,7 @@ setup(name='falcon_rest',
         'Programming Language :: Python :: 3.6'
       ],
       keywords='Falcon REST Python3 SqlAlchemy ',
-      url='https://bitbucket.org/morfat/FalconRest',
+      url='https://bitbucket.org/morfat/falcon_rest',
       author='Morfat Mosoti',
       author_email='morfatmosoti@gmail.com',
       license='MIT',

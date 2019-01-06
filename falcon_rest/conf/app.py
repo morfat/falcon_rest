@@ -3,8 +3,7 @@ import falcon
 
 from .settings import settings
 
-from falcon_rest.models import Base
-from falcon_rest import media
+from falcon_rest.models.base import Base
 
 import importlib
 from pydoc import locate
@@ -16,8 +15,12 @@ def create_db_tables():
 
     for app in settings.INSTALLED_APPS:
         app_models = app + '.models'
-        importlib.import_module(app_models)
-    
+        try:
+            importlib.import_module(app_models)
+        except ModuleNotFoundError:
+            pass
+            
+
     Base.metadata.create_all(settings.DB_ENGINE)
 
 def get_wsgi_application():
@@ -30,8 +33,6 @@ def get_wsgi_application():
     for route in urls_module.routes:
         app.add_route(*route)
 
-    #register the custom handler here
-    app.resp_options.media_handlers = handlers
-
+   
     return app
     

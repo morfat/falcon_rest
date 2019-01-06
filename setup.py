@@ -19,7 +19,7 @@ setup(name='falcon_rest',
       author='Morfat Mosoti',
       author_email='morfatmosoti@gmail.com',
       license='MIT',
-      packages=find_packages()
+      packages=find_packages(),
       install_requires=[
          'gunicorn', 'SQLAlchemy', 'falcon'
       ],

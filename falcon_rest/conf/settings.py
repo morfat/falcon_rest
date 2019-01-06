@@ -8,7 +8,7 @@ for a list of all possible variables.
 
 import os
 import importlib
-from falchemy.conf import global_settings
+from falcon_rest.conf import global_settings
 
 
 ENVIRONMENT_VARIABLE = "FALCON_REST_SETTINGS_MODULE"

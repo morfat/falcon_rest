@@ -1,20 +1,15 @@
-from falcon_rest.auth import auth
+#from falcon_rest.auth import auth
 from falcon_rest.conf.settings import settings
 import falcon
 
 class CoreMiddleWare:
     
-    def __init__(self):
-        self.db_engine = settings.DB_ENGINE
-
-   
     def process_request(self,req,resp):
-        req.context['conn'] = self.db_engine.connect()
+        req.context['connection'] = settings.DB_ENGINE.connect()
 
 
     def process_resource(self,req,resp,resource,params):
-        req.context['transaction'] = req.context['conn'].begin()
-
+        req.context['transaction'] = req.context['connection'].begin()
 
     def process_response(self,req,resp,resource,req_succeeded):
         try:
@@ -25,7 +20,7 @@ class CoreMiddleWare:
         except:
             pass
         finally:
-            req.context['conn'].close()
+            req.context['connection'].close()
 
 
 class CORSMiddleWare:

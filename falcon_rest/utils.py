@@ -4,7 +4,7 @@ import datetime
 import xml.etree.ElementTree as ET
 
     
-def timestamped_uuid():
+def timestamp_uuid():
     return ( str( datetime.datetime.utcnow().timestamp() ).split('.')[0] ) + uuid.uuid4().hex
 
 def convert_xml_to_dict(xml):

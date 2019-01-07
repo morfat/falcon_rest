@@ -1,9 +1,10 @@
 import os
 import falcon
 
-from .settings import settings
+from falcon_rest.conf import settings
 
-from falcon_rest.models.base import Base
+from falcon_rest.db import models
+
 
 import importlib
 from pydoc import locate
@@ -21,7 +22,7 @@ def create_db_tables():
             pass
             
 
-    Base.metadata.create_all(settings.DB_ENGINE)
+    models.Base.metadata.create_all(settings.DB_ENGINE)
 
 def get_wsgi_application():
     #1. Create db tables if not created

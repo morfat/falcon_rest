@@ -4,56 +4,80 @@
 
 class InsertAPIMixin:
 
-    """ Requires base class that implements the called methods 
+    """ 
+    Requires base class that implements the called methods 
     insert()
     """
 
-    def perform_insert(self, req, conn, serialized_data, **kwargs):
-        """ Insert record to storage. return newly inserted . called for HTTP scenarios"""
-        resp_data = self.insert(conn, serialized_data)
-        return { "data": [ resp_data ]  }
+    def perform_insert(self, req, session, serialized_data, **kwargs):
+
+        """
+        Insert record to storage. return newly inserted . called for HTTP scenarios
+        """
+
+        obj = self.table(**serialized_data)
+        session.add(obj)
+        session.commit()
+
+        return { "data": [ obj ]  }
     
 class FetchAPIMixin:
 
-    def perform_fetch(self, req, conn, search_by=None, filter_by=None, order_by=None, **kwargs):
+    def perform_fetch(self, req, session,**kwargs):
         
         """ select from resource storage and return as list 
         """
-        resp_data =  self.fetch(conn, search_by, filter_by, order_by)
-        return { "data": [ dict(row) for row in resp_data ]  }
+
+        serializer = self.serializer_class(many=True)
+
+        filtered_query = self.get_filtered_query(req, session)
+
+        
+        serialized_data = serializer.dump( filtered_query.all() )
+        print(serialized_data)
+
+       
+        return { "data": serialized_data.data  }
 
 
 class RetrieveAPIMixin:
 
-    def perform_retrieve(self, req, conn, pk, **kwargs):
+    def perform_retrieve(self, req, session, pk, **kwargs):
         
         """ select single  from resource storage and return as list 
         """
+        serializer = self.serializer_class()
+        filtered_query = self.get_filtered_query(req, session)
+
+        #apply pk filtering
+        row = filtered_query.filter( self.table.id == pk ).one()
         
-        resp_data =  self.retrieve(conn, pk)
-        return { "data": [ resp_data ]  }
+        #serialize
+        serialized_data = serializer.dump( row )
+      
+        return { "data": [ serialized_data.data ]  }
 
 
 class UpdateAPIMixin:
 
-    def perform_update(self, req, conn, pk, new_data, **kwargs):
+    def perform_update(self, req, session, pk, new_data, **kwargs):
         
         """ Update use PUT
         """
         
-        self.update(conn, pk, new_data)
+        self.update(session, pk, new_data)
         
-        resp_data = self.retrieve(conn, pk)
+        resp_data = self.retrieve(session, pk)
 
-        return resp_data
+        return { "data": [ resp_data ]  }
 
 
 class DestroyAPIMixin:
 
-    def perform_destroy(self, req, conn, pk, **kwargs):
+    def perform_destroy(self, req, session, pk, **kwargs):
         
         """ Delete record
         """
         
-        resp_data =  self.destroy(conn, pk)
+        resp_data =  self.destroy(session, pk)
         return None

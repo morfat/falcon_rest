@@ -1,26 +1,25 @@
 #from falcon_rest.auth import auth
-from falcon_rest.conf.settings import settings
+from falcon_rest.conf import settings
 import falcon
+
+from sqlalchemy.orm import sessionmaker
+Session = sessionmaker(bind=settings.DB_ENGINE)
 
 class CoreMiddleWare:
     
     def process_request(self,req,resp):
-        req.context['connection'] = settings.DB_ENGINE.connect()
-
-
-    def process_resource(self,req,resp,resource,params):
-        req.context['transaction'] = req.context['connection'].begin()
+        req.context['session'] = Session()
 
     def process_response(self,req,resp,resource,req_succeeded):
         try:
             if req_succeeded:
-                req.context['transaction'].commit()
+                req.context['session'].commit()
             else:
-                req.context['transaction'].rollback()
+                req.context['session'].rollback()
         except:
             pass
         finally:
-            req.context['connection'].close()
+            req.context['session'].close()
 
 
 class CORSMiddleWare:

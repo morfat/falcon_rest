@@ -2,82 +2,71 @@
 
 
 
-class InsertAPIMixin:
+class CreateAPIMixin:
 
     """ 
-    Requires base class that implements the called methods 
-    insert()
+    Requires
     """
 
-    def perform_insert(self, req, session, serialized_data, **kwargs):
+    def create(self, req, session, serialized_data, **kwargs):
 
         """
-        Insert record to storage. return newly inserted . called for HTTP scenarios
+        Create record to storage. return newly createed . called for HTTP scenarios
         """
 
         obj = self.table(**serialized_data)
         session.add(obj)
-        session.commit()
-
-        return { "data": [ obj ]  }
+        return obj
     
-class FetchAPIMixin:
+class ListAPIMixin:
 
-    def perform_fetch(self, req, session,**kwargs):
+    def list(self, req, session, **kwargs):
         
         """ select from resource storage and return as list 
         """
 
-        serializer = self.serializer_class(many=True)
-
+        
         filtered_query = self.get_filtered_query(req, session)
 
         
-        serialized_data = serializer.dump( filtered_query.all() )
-        print(serialized_data)
-
-       
-        return { "data": serialized_data.data  }
+        return filtered_query.all()
 
 
 class RetrieveAPIMixin:
 
-    def perform_retrieve(self, req, session, pk, **kwargs):
+    def retrieve(self, req, session, pk, **kwargs):
         
         """ select single  from resource storage and return as list 
         """
-        serializer = self.serializer_class()
-        filtered_query = self.get_filtered_query(req, session)
-
-        #apply pk filtering
-        row = filtered_query.filter( self.table.id == pk ).one()
         
-        #serialize
-        serialized_data = serializer.dump( row )
-      
-        return { "data": [ serialized_data.data ]  }
+        return self.get_object(req, session, pk)
+
 
 
 class UpdateAPIMixin:
 
-    def perform_update(self, req, session, pk, new_data, **kwargs):
+    def update(self, req, session, pk, new_data, **kwargs):
         
-        """ Update use PUT
+        """ 
+        Update use PUT
         """
-        
-        self.update(session, pk, new_data)
-        
-        resp_data = self.retrieve(session, pk)
+        instance = self.get_object(req, session, pk)
 
-        return { "data": [ resp_data ]  }
+        #session.query(self.table).filter(self.table.id == pk )
+        self.get_object_queryset(req, session, pk).update(new_data)
+
+        return instance
+
 
 
 class DestroyAPIMixin:
 
-    def perform_destroy(self, req, session, pk, **kwargs):
+    def destroy(self, req, session, pk, **kwargs):
         
-        """ Delete record
+        """ 
+        Delete record
         """
+
+        self.get_object_queryset(req, session, pk).delete()
         
-        resp_data =  self.destroy(session, pk)
         return None

@@ -6,7 +6,7 @@ class Resource:
     """ This is the base resource class. 
 
     Currently suports Marshmallow serilaizers only.
-    
+
     """
 
     table = None
@@ -18,6 +18,22 @@ class Resource:
     
     def get_filtered_query(self, req, session):
         return self.get_query(session)
+    
+    def get_object_queryset(self, req, session, pk ):
+
+        filtered_query = self.get_filtered_query(req, session)
+
+        #apply pk filtering
+        return filtered_query.filter( self.table.id == pk )
+
+    
+    def get_object(self, req, session, pk ):
+
+        return self.get_object_queryset(req, session,pk).one()
+
+       
+
+
 
 
 

@@ -35,8 +35,8 @@ MIDDLEWARE = []
 
 PAGINATION_PAGE_SIZE = 20
 
-SEARCH_QUERY_PARAM = 'search_by'
-FILTER_QUERY_PARAM = 'filter_by'
-SORT_QUERY_PARAM = 'sort_by'
+SEARCH_QUERY_PARAM = 'search'
+FILTER_QUERY_PARAM = 'filter'
+SORT_QUERY_PARAM = 'sort'
 
 

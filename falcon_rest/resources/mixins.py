@@ -20,16 +20,19 @@ class CreateAPIMixin:
     
 class ListAPIMixin:
 
-    def list(self, req, session, **kwargs):
+    def list(self, req, session, paginator, **kwargs):
         
         """ select from resource storage and return as list 
         """
 
-        
+      
         filtered_query = self.get_filtered_query(req, session)
+        ordered_queryset = self.order_queryset( queryset=filtered_query, req=req)
+
+        paginated_queryset = paginator.paginate_queryset(ordered_queryset, req)
 
         
-        return filtered_query.all()
+        return paginated_queryset.all()
 
 
 class RetrieveAPIMixin:

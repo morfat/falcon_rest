@@ -28,10 +28,16 @@ class ListAPI(Resource, mixins.ListAPIMixin):
         session = req.context['session']
 
         serializer = self.serializer_class(many=True)
-        results = self.list(req, session)
+        paginator = self.pagination_class()
+        
+        results = self.list(req, session, paginator)
         serialized = serializer.dump( results )
 
-        resp.media = {"data": serialized.data }
+        response_data = {"data": serialized.data }
+
+        resp.media = paginator.get_paginated_response(response_data, req)
+
+        
 
 class RetrieveAPI(Resource, mixins.RetrieveAPIMixin):
 
@@ -73,7 +79,7 @@ class DestroyAPI(Resource, mixins.DestroyAPIMixin):
         session = req.context['session']
         self.destroy(req, session, pk)
         resp.media = {"data": [ None ]}
-        
+
         
         
 class ListCreateAPI(ListAPI, CreateAPI ):

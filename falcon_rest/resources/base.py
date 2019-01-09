@@ -5,6 +5,7 @@ from sqlalchemy import  literal_column
 
 
 
+from falcon_rest.paginators import PageNumberPagination
 
 
 class Resource:
@@ -21,8 +22,12 @@ class Resource:
     table = None
     limit = settings.PAGINATION_PAGE_SIZE
     serializer_class = None
+    pagination_class = PageNumberPagination
+
     search_fields = None
     filter_fields = None
+    ordering_fields = ['id']
+    ordering = 'id:desc' #of default fields for ordering if none specified
 
 
     def map_column_filter(self, column, action, value):
@@ -43,6 +48,8 @@ class Resource:
         }
     
         return ops_dict[action]
+    
+   
 
     def get_query(self, session):
         return session.query( self.table)
@@ -92,6 +99,37 @@ class Resource:
                 *filters
              )
             )
+    
+    def order_queryset(self, queryset, req):
+        params = req.params
+        ordering_params = params.get(settings.ORDERING_QUERY_PARAM)
+        try:
+            ordering_params = ordering_params.split() #some come as string
+        except AttributeError:
+            pass
+            
+        if not ordering_params:
+            #apply default ordering
+            ordering = self.ordering
+            ordering_params = ordering.split()
+        
+        for op in ordering_params:
+            col,style = op.split(':')
+            if col in self.ordering_fields:
+                if style == 'desc':
+                    queryset = queryset.order_by( literal_column(col).desc() )
+                elif style == 'asc':
+                    queryset = queryset.order_by( literal_column(col).asc() )
+        
+        return queryset
+
+
+
+                
+
+        
+
+
 
         
         
@@ -136,50 +174,4 @@ class Resource:
 
 
 
-
-
-"""
-    def get_queryset(self):
-        return self.table.__table__.select()
-
-    def insert(self, conn,  data):
-        result = conn.execute( self.table.__table__.insert(), **data )
-        inserted_pk = result.inserted_primary_key
-        return inserted_pk[0]
-    
-    def fetch(self, conn, search_by=None, filter_by=None, sort_by=None, limit=None, for_update=None):
-        limit = limit if limit else self.limit
-
-        queryset = self.get_queryset().limit( limit )
-        
-        if for_update:
-            queryset = queryset.with_for_update()
-
-        return conn.execute( queryset ).fetchall()
-    
-    def retrieve(self, conn, pk, for_update=None):
-        queryset = self.get_queryset().where( self.table.id == pk )
-        
-        if for_update:
-            queryset = queryset.with_for_update()
-
-        result = conn.execute( queryset ).fetchone()
-        return dict(result)
-    
-    def update(self, conn, pk, new_data):
-        result = conn.execute( self.table.__table__.update().values( **new_data ).where( self.table.id == pk ) )
-        return result
-        
-    
-    def destroy(self, conn, pk):
-        queryset = self.table.__table__.delete().where( self.table.id == pk )
-        return conn.execute( queryset )
-
-
-"""
-
-
-
-    
-    
 

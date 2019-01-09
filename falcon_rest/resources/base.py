@@ -2,10 +2,10 @@ from falcon_rest.conf import settings
 
 from sqlalchemy.sql import and_, or_
 from sqlalchemy import  literal_column
-
-
+import sqlalchemy as sa
 
 from falcon_rest.paginators import PageNumberPagination
+import falcon 
 
 
 class Resource:
@@ -107,7 +107,7 @@ class Resource:
             ordering_params = ordering_params.split() #some come as string
         except AttributeError:
             pass
-            
+
         if not ordering_params:
             #apply default ordering
             ordering = self.ordering
@@ -133,9 +133,13 @@ class Resource:
 
         
         
-    def get_filtered_query(self, req, session):
+    def get_filtered_query(self, session, req=None):
         #both search and filter are applied to the query as per given GET params
+       
         queryset = self.get_query(session)
+        if not req:
+            return queryset
+
         params = req.params
 
 
@@ -157,17 +161,20 @@ class Resource:
 
 
 
-    def get_object_queryset(self, req, session, pk ):
+    def get_object_queryset(self, session, pk , req=None):
         
-        filtered_query = self.get_filtered_query(req, session)
+        filtered_query = self.get_filtered_query(session, req)
 
         #apply pk filtering
         return filtered_query.filter( self.table.id == pk )
 
     
-    def get_object(self, req, session, pk ):
+    def get_object(self, session, pk , req=None):
+        try:
+            return self.get_object_queryset(session,pk, req).one()
+        except sa.orm.exc.NoResultFound:
+            raise falcon.HTTPNotFound( description="The requested record doesnot exist")
 
-        return self.get_object_queryset(req, session,pk).one()
 
        
 

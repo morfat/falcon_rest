@@ -1,5 +1,7 @@
 from ..resources import mixins
 from .base import Resource
+from  marshmallow import ValidationError
+import falcon 
 
 class CreateAPI(Resource, mixins.CreateAPIMixin):
 
@@ -8,15 +10,23 @@ class CreateAPI(Resource, mixins.CreateAPIMixin):
     def on_post(self, req, resp, **kwargs):
         session = req.context['session']
         serializer = self.serializer_class()
-        req_serialized = serializer.load( req.media )
+        try:
+            serialized = serializer.load( req.media )
+          
+            created_object = self.create(req, session, serialized)
 
-        created_object = self.create(req, session, req_serialized.data)
+        except ValidationError as err:
+            #err.messages
+            
+            raise falcon.HTTPBadRequest(title='Invalid Data', description=err.messages)
+
 
         #serialize for output
-        resp_serialized = serializer.dump( created_object )
+        resp_data = serializer.dump( created_object )
 
 
-        resp.media = { "data": [ resp_serialized.data ] }
+
+        resp.media = { "data": [ resp_data ] }
 
 
 
@@ -33,7 +43,7 @@ class ListAPI(Resource, mixins.ListAPIMixin):
         results = self.list(req, session, paginator)
         serialized = serializer.dump( results )
 
-        response_data = {"data": serialized.data }
+        response_data = {"data": serialized }
 
         resp.media = paginator.get_paginated_response(response_data, req)
 
@@ -50,7 +60,7 @@ class RetrieveAPI(Resource, mixins.RetrieveAPIMixin):
         result = self.retrieve(req, session, pk)
         serialized = serializer.dump( result )
         
-        resp.media = {"data": [ serialized.data ]}
+        resp.media = {"data": [ serialized ]}
 
 
             
@@ -62,14 +72,21 @@ class UpdateAPI(Resource, mixins.UpdateAPIMixin):
         session = req.context['session']
 
         serializer = self.serializer_class()
-        req_serialized = serializer.load( req.media )
 
-        updated = self.update(req, session, pk, req_serialized.data)
+        try:
+            req_serialized = serializer.load( req.media )
+            updated = self.update(req, session, pk, req_serialized)
 
+        except ValidationError as err:
+            #err.messages
+            
+            raise falcon.HTTPBadRequest(title='Invalid Data', description=err.messages)
+
+        
         #serialize for output
         resp_serialized = serializer.dump( updated )
 
-        resp.media = {"data": [ resp_serialized.data ]}
+        resp.media = {"data": [ resp_serialized ]}
 
 class DestroyAPI(Resource, mixins.DestroyAPIMixin):
 

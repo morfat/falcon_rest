@@ -21,7 +21,7 @@ setup(name='falcon_rest',
       license='MIT',
       packages=find_packages(),
       install_requires=[
-         'gunicorn', 'SQLAlchemy', 'falcon'
+         'gunicorn', 'SQLAlchemy', 'falcon','marshmallow==3.0.0rc2'
       ],
       include_package_data=True,
       zip_safe=False)

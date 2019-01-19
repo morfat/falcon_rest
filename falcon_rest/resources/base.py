@@ -17,6 +17,7 @@ class Resource:
     Search params example format: ?search=subject__startswith:test3,state__eq:Initial
 
 
+
     """
 
     table = None

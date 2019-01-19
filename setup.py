@@ -6,8 +6,8 @@ def readme():
         return f.read()
 
 setup(name='falcon_rest',
-      version='0.1',
-      description=' REST API development project using Falcon and SqlAlchemy ',
+      version='2.1',
+      description='REST API development project using Falcon and SqlAlchemy ',
       long_description=readme(),
       classifiers=[
         'Development Status :: 3 - Alpha',
